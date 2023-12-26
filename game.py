@@ -51,6 +51,29 @@ def testStackTableaus():
     )
     return tableaus
 
+def testDiscardTableaus():
+    # This is an ordered tuple, not a list.
+    tableaus = ([ ],
+               [ 
+                   {'faceValue': 13, 'suit': 'Diamonds'},{'faceValue': 12, 'suit': 'Diamonds'},
+                    {'faceValue': 11, 'suit': 'Diamonds'},{'faceValue': 10, 'suit': 'Diamonds'},
+                    {'faceValue': 9, 'suit': 'Diamonds'},{'faceValue': 8, 'suit': 'Diamonds'},
+                    {'faceValue': 7, 'suit': 'Diamonds'},{'faceValue': 6, 'suit': 'Diamonds'},
+                    {'faceValue': 5, 'suit': 'Diamonds'},{'faceValue': 4, 'suit': 'Diamonds'},
+                    {'faceValue': 3, 'suit': 'Diamonds'},{'faceValue': 2, 'suit': 'Diamonds'},
+                    {'faceValue': 1, 'suit': 'Diamonds'}
+                 ],
+               [    
+                    {'faceValue': 5, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Spades'},
+                    ],
+               [  ],
+               [ {'faceValue': 2, 'suit': 'Hearts'} ],
+               [ {'faceValue': 3, 'suit': 'Spades'},{'faceValue': 2, 'suit': 'Spades'} ],
+               [ {'faceValue': 11, 'suit': 'Hearts'},{'faceValue': 10, 'suit': 'Diamonds'},{'faceValue': 9, 'suit': 'Clubs'},{'faceValue': 8, 'suit': 'Clubs'} ],
+               [ {'faceValue': 1, 'suit': 'Clubs'},{'faceValue': 1, 'suit': 'Hearts'} ] 
+    )
+    return tableaus
+
 # I wanted to get every possible permutation of a deck.
 # not used due to MemoryError with a 52 card deck, lol
 # https://stackoverflow.com/questions/464864/get-all-possible-2n-combinations-of-a-list-s-elements-of-any-length
@@ -100,6 +123,11 @@ def strCard(card):                # convert a card object to an easily printable
     suit = ''
     if card == None: 
         return 'None'
+    elif card == []:
+        return '[]'
+    elif card == ():
+        return '()'
+    
     elif card['suit'] == 'Spades':
         suit = '♠'
     elif card['suit'] == 'Hearts':
@@ -125,19 +153,20 @@ def strCard(card):                # convert a card object to an easily printable
     
     return (value + suit)
 
-def printTableau(tableau):          
+def printTableau(tableauInput):        
+    tableau = deepcopy(tableauInput)    # Print tableau needs a seperate object so it can reformat it.
     maxCascadeLength = 0
     for cascade in tableau:
          if len(cascade) > maxCascadeLength:
               maxCascadeLength = len(cascade)
 
-    a = 0
+    col = 0
     for cascade in tableau:
-        b = 0
+        row = 0
         for card in cascade:
-            tableau[a][b] = strCard(card)
-            b = b + 1
-        a = a + 1    
+            tableau[col][row] = strCard(card)
+            row = row + 1
+        col = col + 1    
 
     table = PrettyTable()
     cascadeIter = 0
@@ -150,6 +179,14 @@ def printTableau(tableau):
         cascadeIter = cascadeIter + 1
     
     print(table)
+
+
+def printGameState(gameState):
+    foundations = gameState['foundations']
+    cells = gameState['cells']
+    print("Foundations:",strCard(foundations[0]),strCard(foundations[1]),strCard(foundations[2]),strCard(foundations[3]))
+    print("Cells:",strCard(cells[0]),strCard(cells[1]),strCard(cells[2]),strCard(cells[3]))
+    printTableau(gameState['tableaus'])
 
 
 def isOppositeColor(baseCardSuit,movedCardSuit):
@@ -223,6 +260,18 @@ def maxStackMoveEmpty(freeCells,freeFoundations):    # max number of stacked car
     return (int(floor(maxStackMoveOccupied(freeCells,freeFoundations) / 2)))
 
 
+def countFreecells():
+    return
+
+
+def countFreeFoundations():
+    return
+
+
+def countMoveableStackSize():
+    return
+
+
 def testMaxStacks():
     print('## testMaxStacks() ##')
     fcs = [0,1,2,3,4]
@@ -237,6 +286,33 @@ def isFaceOneLower(lesserCardFace,greaterCardFace):
             return True
         else:
             return False    
+
+
+def isCardTop(tableau,row):
+    if len(tableau) - 1 == row:
+        return True
+    elif tableau == [] or tableau == None: 
+        return False
+    else:        
+        return False
+
+
+def testIsCardTop(tableaus):
+    print("## testIsCardTop(tableaus) ##")
+    print("card","row","isCardTop")
+    count = 0
+    for tableau in tableaus:
+        row = 0
+        for card in tableau:
+            result = isCardTop(tableau,row)
+            print(strCard(card),row,result)
+            row = row + 1
+            if result:
+                count = count + 1
+    correctCount = 7
+    print("Count:",count)
+    return
+
 
 def canDiscard(foundation,card):
     if foundation == None and card['faceValue'] == 1:
@@ -329,7 +405,7 @@ def testTableauStacks(tableaus):
         return True
 
 
-def isCardMovable(tableau,row):
+def isStackMovable(tableau,row):
     if len(tableau) - 1 == row:
         return True
     elif tableau == [] or tableau == None: 
@@ -344,13 +420,13 @@ def isCardMovable(tableau,row):
         return False
 
 
-def testIsCardMovable(tableaus):
+def testIsStackMovable(tableaus):
     print("## testIsCardMovable(tableaus) ##")
     print("card","row","isCardMovable")
     for tableau in tableaus:
         row = 0
         for card in tableau:
-            result = isCardMovable(tableau,row)
+            result = isStackMovable(tableau,row)
             print(strCard(card),row,result)
             row = row + 1
     return
@@ -389,19 +465,43 @@ def testCanPlaceCard(deck):
         return True
 
 
-
-
 def doDiscard(gameState,col,row):
-    if canDiscard(gameState['tableau'][col][row]):
-        return True
-    
+    card = gameState['tableaus'][col][row]
+    tableau = gameState['tableaus'][col]
+    changed = False
+    # print(card)
+    i = 0
+    for foundation in gameState['foundations']:
+        isCardTopBool = isCardTop(tableau,row)
+        canDiscardBool = canDiscard(foundation,card)
+        if isCardTopBool and canDiscardBool:
+            logging.debug(strCard(foundation) + " " + strCard(card) + " doDiscard( "+ str(col) + ", " + str(row) + ")" )
+            gameState['foundations'][i] = tableau[row]
+            tableau.remove(card)
+            gameState['changed'] = True
+            return gameState
+        i = i + 1
+    return gameState
+
 
 def testDoDiscard(gameState):
-    doDiscard(gameState,0,0)
-    return
+    tableaus = testDiscardTableaus()
+    gameState['tableaus'] = tableaus
+
+    col = len(tableaus) - 1 
+    while col >= 0:
+        row = len(tableaus[col]) - 1
+        while row >= 0:
+            gameState['changed'] = False
+            gameState = doDiscard(gameState,col,row)
+            if gameState['changed']:
+                printGameState(gameState)   
+            row = row - 1
+        col = col - 1
+    return 
 
 
-def doMoveCard():
+def doMoveStack():
     return
 
 
@@ -428,11 +528,17 @@ def unitTests(gameState):
     # testCanPlaceCard(deck)
 
     tableaus = testStackTableaus()
-    printTableaus = deepcopy(tableaus)           # Print tableau needs a seperate object so it can reformat it.
-    printTableau(printTableaus)
+    gameState['tableaus'] = tableaus
+    # printTableaus = deepcopy(tableaus)           
+    printGameState(gameState)
     # testTableauStacks(tableaus)
     # testIsCardMovable(tableaus)
     # testDoDiscard(gameState)
+    # testIsCardTop(tableaus)
+
+
+    testDoDiscard(gameState)
+    # printGameState(gameState)
     return
 
 
