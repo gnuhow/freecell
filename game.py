@@ -82,9 +82,9 @@ def deckPermutations(deck):
 
 def dealCards(deck):
     foundations = [None,None,None,None]
-    cells = [None,None,None,None]
+    cells = [None,None,None,None]  
     tableaus = ([ deck[0],deck[8],deck[16],deck[24],deck[32],deck[40],deck[48] ],        # This is an ordered tuple, not a list.
-               [ deck[1],deck[9],deck[17],deck[25],deck[33],deck[41],deck[49] ],
+               [ deck[1],deck[9],deck[17],deck[25],deck[33],deck[41],deck[49] ],        # empty tableaus should be an empty list []
                [ deck[2],deck[10],deck[18],deck[26],deck[34],deck[42],deck[50] ],
                [ deck[3],deck[11],deck[19],deck[27],deck[35],deck[43],deck[51] ],
                [ deck[4],deck[12],deck[20],deck[28],deck[36],deck[44] ],
@@ -299,7 +299,8 @@ def isTableauStacked(tableau):        # check if top two cards are stacked
     else:
         return False
 
-def tableauStackDepths(tableau):        # measure stack depth
+
+def tableauStackDepth(tableau):        # returns from 1 to 12. a stack depth of 1 is a single card.
     i = -1
     depth = 1
     while i > -1*len(tableau):          # iterate over tableau list backwards
@@ -318,7 +319,7 @@ def testTableauStacks(tableaus):
     countIsStacked = 0
     for tableau in tableaus:
         result = isTableauStacked(tableau)
-        depth = tableauStackDepths(tableau)
+        depth = tableauStackDepth(tableau)
         print(tableau,result,depth)
         if result:
             countIsStacked = countIsStacked + 1
@@ -326,7 +327,34 @@ def testTableauStacks(tableaus):
 
     if countIsStacked == correctCountIsStacked:
         return True
-    
+
+
+def isCardMovable(tableau,row):
+    if len(tableau) - 1 == row:
+        return True
+    elif tableau == [] or tableau == None: 
+        return False
+    elif isTableauStacked(tableau):
+        depth = tableauStackDepth(tableau)
+        if len(tableau) - row - 1 < depth:
+            return True
+        else:
+            return False
+    else:        
+        return False
+
+
+def testIsCardMovable(tableaus):
+    print("## testIsCardMovable(tableaus) ##")
+    print("card","row","isCardMovable")
+    for tableau in tableaus:
+        row = 0
+        for card in tableau:
+            result = isCardMovable(tableau,row)
+            print(strCard(card),row,result)
+            row = row + 1
+    return
+
 
 def canPlaceCard(bottomCard,topCard):
     if topCard is None:
@@ -361,8 +389,15 @@ def testCanPlaceCard(deck):
         return True
 
 
-def doDiscard(gameState,tab,row):
-        if canDiscard(gameState['tableau']['tab']['row'])
+
+
+def doDiscard(gameState,col,row):
+    if canDiscard(gameState['tableau'][col][row]):
+        return True
+    
+
+def testDoDiscard(gameState):
+    doDiscard(gameState,0,0)
     return
 
 
@@ -383,7 +418,8 @@ def play():
     # Create an API, so an AI can try to access the card game.
     return
 
-def unitTests():
+
+def unitTests(gameState):
     deck = deckMaker()
     # testCanStack(deck)
     # testMaxStacks()
@@ -395,7 +431,10 @@ def unitTests():
     printTableaus = deepcopy(tableaus)           # Print tableau needs a seperate object so it can reformat it.
     printTableau(printTableaus)
     # testTableauStacks(tableaus)
+    # testIsCardMovable(tableaus)
+    # testDoDiscard(gameState)
     return
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
@@ -403,5 +442,5 @@ if __name__ == "__main__":
     deck = list(deckMaker())
     # random.shuffle(deck)
     gameState = dealCards(deck)
-    unitTests()
+    unitTests(gameState)
 
