@@ -1,0 +1,6 @@
+Finish the game class and file.
+make a main python class and file.
+Add a rest api to the game class.
+Add a seperate class and file for unit tests
+Add a seperate class and file for randomly solving games
+Add a seperate class and file for solving games with AI.
