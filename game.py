@@ -10,7 +10,7 @@ def deckMaker():
     # 12 is a Queen
     # 13 is a King
     # This is a tuple, not a list.
-    deck = ({'faceValue': 1, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Hearts'},{'faceValue': 1, 'suit': 'Clubs'},{'faceValue': 1, 'suit': 'Diamonds'},
+    deck = [{'faceValue': 1, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Hearts'},{'faceValue': 1, 'suit': 'Clubs'},{'faceValue': 1, 'suit': 'Diamonds'},
             {'faceValue': 2, 'suit': 'Spades'},{'faceValue': 2, 'suit': 'Hearts'},{'faceValue': 2, 'suit': 'Clubs'},{'faceValue': 2, 'suit': 'Diamonds'},
             {'faceValue': 3, 'suit': 'Spades'},{'faceValue': 3, 'suit': 'Hearts'},{'faceValue': 3, 'suit': 'Clubs'},{'faceValue': 3, 'suit': 'Diamonds'},
             {'faceValue': 4, 'suit': 'Spades'},{'faceValue': 4, 'suit': 'Hearts'},{'faceValue': 4, 'suit': 'Clubs'},{'faceValue': 4, 'suit': 'Diamonds'},
@@ -23,13 +23,12 @@ def deckMaker():
             {'faceValue': 11, 'suit': 'Spades'},{'faceValue': 11, 'suit': 'Hearts'},{'faceValue': 11, 'suit': 'Clubs'},{'faceValue': 11, 'suit': 'Diamonds'},
             {'faceValue': 12, 'suit': 'Spades'},{'faceValue': 12, 'suit': 'Hearts'},{'faceValue': 12, 'suit': 'Clubs'},{'faceValue': 12, 'suit': 'Diamonds'},
             {'faceValue': 13, 'suit': 'Spades'},{'faceValue': 13, 'suit': 'Hearts'},{'faceValue': 13, 'suit': 'Clubs'},{'faceValue': 13, 'suit': 'Diamonds'}        
-    )
+    ]
     return deck
 
 
 def testStackTableaus():
-    # This is an ordered tuple, not a list.
-    tableaus = ([ 
+    tableaus = [[ 
                     {'faceValue': 13, 'suit': 'Diamonds'},{'faceValue': 12, 'suit': 'Clubs'},
                     {'faceValue': 11, 'suit': 'Diamonds'},{'faceValue': 10, 'suit': 'Clubs'},
                     {'faceValue': 9, 'suit': 'Hearts'},{'faceValue': 8, 'suit': 'Clubs'},
@@ -48,12 +47,11 @@ def testStackTableaus():
                [ {'faceValue': 9, 'suit': 'Hearts'},{'faceValue': 8, 'suit': 'Hearts'} ],
                [ {'faceValue': 11, 'suit': 'Hearts'},{'faceValue': 10, 'suit': 'Diamonds'},{'faceValue': 9, 'suit': 'Clubs'},{'faceValue': 8, 'suit': 'Clubs'} ],
                [ {'faceValue': 11, 'suit': 'Hearts'},{'faceValue': 10, 'suit': 'Diamonds'},{'faceValue': 9, 'suit': 'Clubs'} ] 
-    )
+    ]
     return tableaus
 
 def testDiscardTableaus():
-    # This is an ordered tuple, not a list.
-    tableaus = ([ ],
+    tableaus = [[ ],
                [ 
                    {'faceValue': 13, 'suit': 'Diamonds'},{'faceValue': 12, 'suit': 'Diamonds'},
                     {'faceValue': 11, 'suit': 'Diamonds'},{'faceValue': 10, 'suit': 'Diamonds'},
@@ -71,7 +69,7 @@ def testDiscardTableaus():
                [ {'faceValue': 3, 'suit': 'Spades'},{'faceValue': 2, 'suit': 'Spades'} ],
                [ {'faceValue': 11, 'suit': 'Hearts'},{'faceValue': 10, 'suit': 'Diamonds'},{'faceValue': 9, 'suit': 'Clubs'},{'faceValue': 8, 'suit': 'Clubs'} ],
                [ {'faceValue': 1, 'suit': 'Clubs'},{'faceValue': 1, 'suit': 'Hearts'} ] 
-    )
+    ]
     return tableaus
 
 # I wanted to get every possible permutation of a deck.
@@ -97,16 +95,17 @@ def comboSequence(deck):
 # Size of all permutations on disk	6.615E+67	bytes
 # Size of all permutations on disk	6.615E+55	Terabytes
 #  from itertools import permutations
-def deckPermutations(deck):
-    permutationObject = permutations(deck)        # all possible orderings, no repeated elements
-    hand = tuple(permutationObject)
-    return(hand)
+# def deckPermutations(deck):
+#     permutationObject = permutations(deck)      # all possible orderings, no repeated elements
+#     hand = tuple(permutationObject)
+#     return(hand)
 
 
 def dealCards(deck):
-    foundations = [None,None,None,None]
-    cells = [None,None,None,None]  
-    tableaus = ([ deck[0],deck[8],deck[16],deck[24],deck[32],deck[40],deck[48] ],        # This is an ordered tuple, not a list.
+    foundations = [None,None,None,None] 
+    cells = [None,None,None,None]           
+    changed = False
+    tableaus = [[ deck[0],deck[8],deck[16],deck[24],deck[32],deck[40],deck[48] ],        
                [ deck[1],deck[9],deck[17],deck[25],deck[33],deck[41],deck[49] ],        # empty tableaus should be an empty list []
                [ deck[2],deck[10],deck[18],deck[26],deck[34],deck[42],deck[50] ],
                [ deck[3],deck[11],deck[19],deck[27],deck[35],deck[43],deck[51] ],
@@ -114,8 +113,8 @@ def dealCards(deck):
                [ deck[5],deck[13],deck[21],deck[29],deck[37],deck[45] ],
                [ deck[6],deck[14],deck[22],deck[30],deck[38],deck[46] ],
                [ deck[7],deck[15],deck[23],deck[31],deck[39],deck[47] ] 
-    )
-    gameState = {'tableaus': tableaus,'cells': cells,'foundations': foundations}
+    ]
+    gameState = {'tableaus': tableaus,'cells': cells,'foundations': foundations, 'changed': changed}
     return gameState
 
 
@@ -186,6 +185,7 @@ def printGameState(gameState):
     cells = gameState['cells']
     print("Foundations:",strCard(foundations[0]),strCard(foundations[1]),strCard(foundations[2]),strCard(foundations[3]))
     print("Cells:",strCard(cells[0]),strCard(cells[1]),strCard(cells[2]),strCard(cells[3]))
+    print("Changed:",gameState['changed'])
     printTableau(gameState['tableaus'])
 
 
@@ -252,34 +252,115 @@ def testCanStack(deck):
                 print(strCard(baseCard),strCard(movedCard),str(canStack(baseCard,movedCard)))
 
 
-def maxStackMoveOccupied(freeCells,freeFoundations):    # max number of stacked cards you can move onto another stack.
+def calcMaxStackMoveOccupied(freeCells,freeFoundations):    # max number of stacked cards you can move onto another stack.
     return (2 ** freeFoundations * (freeCells + 1))
     
 
-def maxStackMoveEmpty(freeCells,freeFoundations):    # max number of stacked cards you can move into an empty tableau.
-    return (int(floor(maxStackMoveOccupied(freeCells,freeFoundations) / 2)))
+def calcMaxStackMoveEmpty(freeCells,freeFoundations):    # max number of stacked cards you can move into an empty tableau.
+    return (int(floor(calcMaxStackMoveOccupied(freeCells,freeFoundations) / 2)))
 
 
-def countFreecells():
-    return
-
-
-def countFreeFoundations():
-    return
-
-
-def countMoveableStackSize():
-    return
-
-
-def testMaxStacks():
-    print('## testMaxStacks() ##')
+def testCalcMaxStacks():
+    print('## testCalcMaxStacks() ##')
     fcs = [0,1,2,3,4]
     ffs = [0,1,2,3,4]
     print("freeCells","freeFoundations","maxStackMoveOccupied","maxStackMoveEmpty")
     for fc in fcs:
         for ff in ffs:
-            print(fc,ff,maxStackMoveOccupied(fc,ff),maxStackMoveEmpty(fc,ff))
+            print(fc,ff,calcMaxStackMoveOccupied(fc,ff),calcMaxStackMoveEmpty(fc,ff))
+
+
+def countFreecells(cells):
+    count = 0
+    for cell in cells:
+        if cell == None:
+            count = count + 1    
+    return count
+
+
+def countFreeTableaus(tableaus):
+    count = 0
+    i = 0
+    while i < len(tableaus):
+        tableau = tableaus[i]
+        if tableau == [] or tableau == ():
+            count = count + 1
+            # print(tableau,'countFreeTableaus',count)
+        i = i + 1
+        # print(tableau,'countFreeTableaus:',count,'i:',i)
+    return count      
+
+
+def maxStackMoveOccupied(gameState):
+    freeCells = countFreecells(gameState['cells'])
+    freeTableaus = countFreeTableaus(gameState['tableaus'])
+    # print('freeCells:',freeCells,'freeFoundations',freeFoundations) 
+    size = calcMaxStackMoveOccupied(freeCells,freeTableaus)
+    return size
+
+
+def maxStackMoveEmpty(gameState):
+    freeCells = countFreecells(gameState['cells'])
+    freeTableaus = countFreeTableaus(gameState['tableaus']) 
+    size = calcMaxStackMoveEmpty(freeCells,freeTableaus)
+    return size
+
+
+def testMaxStacks(gameState):
+    print('## testMaxStacks() ##')
+    cells = ( 
+        ({'faceValue': 1, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Hearts'},{'faceValue': 1, 'suit': 'Clubs'},{'faceValue': 1, 'suit': 'Diamonds'}),
+        ({'faceValue': 1, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Hearts'},{'faceValue': 1, 'suit': 'Clubs'},None),
+        ({'faceValue': 1, 'suit': 'Spades'},{'faceValue': 1, 'suit': 'Hearts'},None,None),
+        ({'faceValue': 1, 'suit': 'Spades'},None,None,None),
+        (None,None,None,{'faceValue': 1, 'suit': 'Diamonds'}),
+        (None,None,None,None),
+    )
+    tableauMeta = [
+        [
+            [ {'faceValue': 13, 'suit': 'Diamonds'}],   [{'faceValue': 12, 'suit': 'Diamonds'} ],
+            [  {'faceValue': 5, 'suit': 'Spades'}],     [{'faceValue': 1, 'suit': 'Spades'},], 
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ],
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ] 
+        ],
+        [
+            [ ],   [ {'faceValue': 13, 'suit': 'Diamonds'}],
+            [  {'faceValue': 5, 'suit': 'Spades'}],     [{'faceValue': 1, 'suit': 'Spades'},], 
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ],
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ] 
+        ],
+        [
+            [ ],   [ ],
+            [  {'faceValue': 5, 'suit': 'Spades'}],     [{'faceValue': 1, 'suit': 'Spades'},], 
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ],
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ] 
+        ],
+        [
+            [ ],   [ ],
+            [  ],     [{'faceValue': 1, 'suit': 'Spades'},], 
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ],
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ] 
+        ],
+        [
+            [ ],   [ ],
+            [  ],     [{'faceValue': 1, 'suit': 'Spades'},], 
+            [ {'faceValue': 11, 'suit': 'Hearts'} ],    [ {'faceValue': 1, 'suit': 'Hearts'} ],
+            [ ],    [ {'faceValue': 1, 'suit': 'Hearts'} ] 
+        ]
+    ]
+
+
+    # gameState['cells'] = cells[0]
+    # gameState['tableaus'] = tableauMeta[4]
+    # print('countFreeTableaus:',countFreeTableaus(gameState['tableaus']))
+    
+    print("freeCells","freeFoundations","maxStackMoveOccupied","maxStackMoveEmpty")
+    for cell in cells:
+        for tableaus in tableauMeta:
+            gameState['cells'] = cell
+            gameState['tableaus'] = tableaus
+            print(countFreecells(cell),countFreeTableaus(tableaus),maxStackMoveOccupied(gameState),maxStackMoveEmpty(gameState))
+
 
 def isFaceOneLower(lesserCardFace,greaterCardFace):
         if lesserCardFace + 1 == greaterCardFace:
@@ -501,7 +582,9 @@ def testDoDiscard(gameState):
     return 
 
 
-def doMoveStack():
+def doMoveStack(gameState,srcCol,srcRow,dstCol,dstRow):
+    # srcCard = 
+    # if canStack
     return
 
 
@@ -521,24 +604,25 @@ def play():
 
 def unitTests(gameState):
     deck = deckMaker()
+    printGameState(gameState)
     # testCanStack(deck)
-    # testMaxStacks()
+    # testCalcMaxStacks()
     # testCanDiscard(deck)
     # testIsStacked(deck)
     # testCanPlaceCard(deck)
 
-    tableaus = testStackTableaus()
-    gameState['tableaus'] = tableaus
+    # tableaus = testStackTableaus()
+    # gameState['tableaus'] = tableaus
     # printTableaus = deepcopy(tableaus)           
-    printGameState(gameState)
+    
     # testTableauStacks(tableaus)
     # testIsCardMovable(tableaus)
     # testDoDiscard(gameState)
     # testIsCardTop(tableaus)
 
-
-    testDoDiscard(gameState)
+    # testDoDiscard(gameState)
     # printGameState(gameState)
+    # testMaxStacks(gameState)
     return
 
 
