@@ -1,4 +1,5 @@
 Finish the game class and file.
+- change the cells to behave as specific cells rather than as a group.
 make a main python class and file.
 Add a rest api to the game class.
 Add a seperate class and file for unit tests.

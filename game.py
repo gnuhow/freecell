@@ -4,6 +4,7 @@ from prettytable import PrettyTable
 from copy import deepcopy
 from math import floor
 
+############################  Decks, Tableaus and GameState init ############################
 def deckMaker():
     # 1 is an Ace
     # 11 is a Jack
@@ -117,10 +118,11 @@ def dealCards(deck):
     gameState = {'tableaus': tableaus,'cells': cells,'foundations': foundations, 'changed': changed}
     return gameState
 
+############################ Print Format ############################
 
 def strCard(card):                # convert a card object to an easily printable string
     suit = ''
-    if card == None: 
+    if card is None: 
         return 'None'
     elif card == []:
         return '[]'
@@ -136,7 +138,7 @@ def strCard(card):                # convert a card object to an easily printable
     elif card['suit'] == 'Diamonds':
         suit = '♦'
     else:
-        logging.ERROR('printCard(card) Suite not found.')
+        logging.error('printCard(card) Suite not found.')
     
     value = ''
     if card['faceValue'] == 1:
@@ -151,6 +153,12 @@ def strCard(card):                # convert a card object to an easily printable
         value = str(card['faceValue'])
     
     return (value + suit)
+
+def strTableau(tableau):
+    result = ''
+    for card in tableau:
+        result = result + ' ' + strCard(card)
+    return result
 
 def printTableau(tableauInput):        
     tableau = deepcopy(tableauInput)    # Print tableau needs a seperate object so it can reformat it.
@@ -188,6 +196,7 @@ def printGameState(gameState):
     print("Changed:",gameState['changed'])
     printTableau(gameState['tableaus'])
 
+############################ Support Functions, aka Booleans and Calculations ############################
 
 def isOppositeColor(baseCardSuit,movedCardSuit):
     if baseCardSuit == 'Clubs' or baseCardSuit == 'Spades':
@@ -220,12 +229,11 @@ def isOppositeColor(baseCardSuit,movedCardSuit):
 
 
 def isFaceOneHigher(higherCard,lowerCard):
-    # logging.debug("isFaceOneHigher(" + str(baseCardFace) + "," + str(movedCardFace))
     if (higherCard - 1) == lowerCard:
-        # logging.debug("isFaceOneHigher(" + str(higherCard) + "," + str(lowerCard) + "," + "True)")
+        logging.debug("isFaceOneHigher(" + str(higherCard) + "," + str(lowerCard) + ") " + "True")
         return True
     else:
-        # logging.debug("isFaceOneHigher() False")
+        logging.debug("isFaceOneHigher(" + str(higherCard) + "," + str(lowerCard) + ") " + "False")
         return False
 
 
@@ -236,7 +244,7 @@ def canStack(baseCardObj,movedCardObj):
     movedCardSuit = movedCardObj['suit']
     
     if isOppositeColor(baseCardSuit,movedCardSuit):
-        # logging.debug(strCard(baseCardObj) +" " + strCard(movedCardObj) + " isOppositeColor()-> True")
+        logging.debug("isOppositeColor( " + strCard(baseCardObj) + ", " + strCard(movedCardObj) + " ) True")
         result = isFaceOneHigher(baseCardFace,movedCardFace) 
         return result
     else:
@@ -273,7 +281,7 @@ def testCalcMaxStacks():
 def countFreecells(cells):
     count = 0
     for cell in cells:
-        if cell == None:
+        if cell is None:
             count = count + 1    
     return count
 
@@ -366,13 +374,14 @@ def isFaceOneLower(lesserCardFace,greaterCardFace):
         if lesserCardFace + 1 == greaterCardFace:
             return True
         else:
+            logging.debug('False isFaceOneLower(' + strCard(lesserCardFace) + ', ' + strCard(greaterCardFace) + ')')
             return False    
 
 
 def isCardTop(tableau,row):
     if len(tableau) - 1 == row:
         return True
-    elif tableau == [] or tableau == None: 
+    elif tableau == [] or tableau is None: 
         return False
     else:        
         return False
@@ -396,9 +405,9 @@ def testIsCardTop(tableaus):
 
 
 def canDiscard(foundation,card):
-    if foundation == None and card['faceValue'] == 1:
+    if foundation is None and card['faceValue'] == 1:
         return True        
-    elif foundation == None:
+    elif foundation is None:
         return False
     elif foundation['suit'] == card['suit']:
         # logging.debug("same suite: " + strCard(foundation) + ", " + strCard(card))
@@ -427,7 +436,7 @@ def testCanDiscard(deck):
 
 def isCardStacked(bottomCard,topCard):     # Is the pile of cards a moveable stack?
     if isOppositeColor(bottomCard['suit'],topCard['suit']):
-        # logging.debug(strCard(bottomCard) + " "  + strCard(topCard) + "  isOppositeColor()")
+        logging.debug( "isOppositeColor(" + strCard(topCard) + ", " + strCard(bottomCard) + ") True")
         return isFaceOneHigher(bottomCard['faceValue'],topCard['faceValue'])
     return False
 
@@ -489,7 +498,7 @@ def testTableauStacks(tableaus):
 def isStackMovable(tableau,row):
     if len(tableau) - 1 == row:
         return True
-    elif tableau == [] or tableau == None: 
+    elif tableau == [] or tableau is None: 
         return False
     elif isTableauStacked(tableau):
         depth = tableauStackDepth(tableau)
@@ -515,7 +524,7 @@ def testIsStackMovable(tableaus):
 
 def canPlaceCard(bottomCard,topCard):
     if topCard is None:
-        logging.ERROR("canPlaceCard() invalid topCard: None")
+        logging.info("canPlaceCard() invalid topCard: None")
         return False
     if bottomCard is None: 
         return True
@@ -525,6 +534,7 @@ def canPlaceCard(bottomCard,topCard):
 
 def testCanPlaceCard(deck):
     print('## testCanPlaceCard(deck) ##')
+    print('bottomCard','topCard','result')
     count = 0
     for bottomCard in deck:
         for topCard in deck:
@@ -546,11 +556,43 @@ def testCanPlaceCard(deck):
         return True
 
 
+def isTableauRowFree(row,tableau):
+    if len(tableau) == 0:       # empty tableau
+        return True
+    elif len(tableau) == row:   # the empty end row in the tableau
+        return True
+    elif len(tableau) > row:    # Out of bounds
+        logging.info('Occupied row: isTableauRowFree( row: ' + str(row) + ' ' + strTableau(tableau) )
+        return False
+    elif len(tableau) < row:    # Occupied
+        logging.error('Out of bounds row: isTableauRowFree(' + str(row) + ', ' + strTableau(tableau) )
+        return False
+    elif tableau[row] == [] or tableau[row] == () or tableau[row] == {} or tableau[row] is None:    # an empty row.
+        return True
+    else:
+        logging.info( 'isTableauRowFree( row: ' + str(row) + ' ' + strTableau(tableau) )
+        return False
+
+
+def testIsTableauRowFree(gameState):
+    gameState['tableaus'] = testStackTableaus()
+    tableaus = gameState['tableaus']
+    printGameState(gameState)
+    col = 0
+    while col < len(tableaus):
+        row = 0
+        while row <= len(tableaus[col]) + 1: 
+            print(isTableauRowFree(row,tableaus[col]),'col:',col,'row:',row)
+            row = row + 1
+        col = col + 1 
+
+
+############################ Action Functions ############################
+        
 def doDiscard(gameState,col,row):
+    gameState['changed'] = False
     card = gameState['tableaus'][col][row]
     tableau = gameState['tableaus'][col]
-    changed = False
-    # print(card)
     i = 0
     for foundation in gameState['foundations']:
         isCardTopBool = isCardTop(tableau,row)
@@ -582,15 +624,132 @@ def testDoDiscard(gameState):
     return 
 
 
-def doMoveStack(gameState,srcCol,srcRow,dstCol,dstRow):
+def moveToCell(gameState,srcCol,srcRow):
+    gameState['changed'] = False
+    card = gameState['tableaus'][srcCol][srcRow]
+    tableau = gameState['tableaus'][srcCol]
+    cells = gameState['cells']
+    isCardTopBool = isCardTop(tableau,srcRow)
+    hasFreeCells = (countFreecells(gameState['cells']) > 0)
+    # print(card,'isCardTopBool',isCardTopBool,'hasFreeCells',hasFreeCells)
+    i = 0
+    if hasFreeCells and isCardTopBool:
+        while i < len(cells):
+            if cells[i] is None:
+                print('cell:',cells[i],'i',i,'col:',srcCol,'row:',srcRow,card)
+                gameState['changed'] = True
+                cells[i] = card
+                tableau.remove(card)
+                return gameState
+            i = i + 1
+    else:
+        return gameState
+
+
+def testMoveToCell(gameState):      # make this location aware
+    gameState['tableaus'] = testStackTableaus()
+    printGameState(gameState)
+    col = 0
+    for tableau in gameState['tableaus']:
+        row = 0
+        for card in tableau:
+            gameState['changed'] = False
+            gameState = moveToCell(gameState,col,row)
+            if gameState['changed']:
+                printGameState(gameState)
+            row = row + 1
+        col = col + 1
+    return gameState
+
+
+def moveFromCell(gameState,cellNum,dstCol,dstRow):
+    gameState['changed'] = False
+    tableau = gameState['tableaus'][dstCol]
+    cells = gameState['cells']
+    topCard = cells[cellNum]
+ 
+
+    tableauLen = len(tableau)
+    if tableauLen == 0:
+        bottomCard = None
+    elif dstRow <= (tableauLen):
+        bottomCard = tableau[dstRow - 1]
+    else:
+        logging.info('dstRow out of bounds: moveFromCell(gameState,' + str(cellNum) + ',' + str(dstCol) + ',' + str(dstRow) + ')')
+        return False
+        
+
+    isTableauRowFreeBool = isTableauRowFree(dstRow,tableau)
+    canPlaceCardBool = canPlaceCard(bottomCard,topCard)
+    logging.debug('moveFromCell(gameState,' + str(cellNum) + ', ' + str(dstCol) + ', ' + str(dstRow) + ')' 
+        + ' isTableauRowFreeBool: ' + str(isTableauRowFreeBool) + ' canPlaceCardBool: ' + str(canPlaceCardBool)
+        + ' bottomCard: ' + strCard(bottomCard) + ' topCard:' + strCard(topCard) )
+
+    if isTableauRowFreeBool and canPlaceCardBool:
+        gameState['changed'] = True
+        tableau.append(topCard)
+        cells[cellNum] = None
+        return gameState
+    else:
+        return gameState
+
+
+def testMoveFromCell(gameState):
+    gameState['tableaus'] = testStackTableaus()
+    gameState['cells'] = [{'faceValue': 1, 'suit': 'Hearts'},{'faceValue': 13, 'suit': 'Spades'},{'faceValue': 7, 'suit': 'Diamonds'},{'faceValue': 8, 'suit': 'Clubs'}]
+    printGameState(gameState)
+    cellNum = -1
+    for cell in gameState['cells']:
+        cellNum = cellNum + 1
+        dstCol = - 1
+        for tableau in gameState['tableaus']:
+            dstCol = dstCol + 1
+            dstRow = - 1 
+            while dstRow <= len(tableau):
+                dstRow = dstRow + 1
+                # print('moveFromCell(gameState',cellNum,dstCol,dstRow)
+                moveFromCell(gameState,cellNum,dstCol,dstRow)
+                if gameState['changed'] == True:
+                    printGameState(gameState)
+    return
+
+
+def moveStack(gameState,srcCol,srcRow,dstCol,dstRow):
     # srcCard = 
     # if canStack
     return
 
 
-def isGameWon():
-    return
+def isGameWon(gameState):
+    foundationCheck = 0
+    for foundation in gameState['foundations']:
+        if foundation == {'faceValue': 13, 'suit': 'Spades'}:
+            foundationCheck = foundationCheck + 1
+        elif foundation == {'faceValue': 13, 'suit': 'Hearts'}:
+            foundationCheck = foundationCheck + 1
+        elif foundation == {'faceValue': 13, 'suit': 'Clubs'}:
+            foundationCheck = foundationCheck + 1
+        elif foundation == {'faceValue': 13, 'suit': 'Diamonds'}:
+            foundationCheck = foundationCheck + 1 
 
+    cellCheck = 0
+    for cell in gameState['cells']:
+        if cell is None:
+            cellCheck = cellCheck + 1
+
+    tableauCheck = 0
+    for tableau in gameState['tableaus']:
+        for card in tableau:
+            if tableau == [] or tableau is None:
+                tableauCheck = tableauCheck + 1
+
+    if foundationCheck == 4 and cellCheck == 0 and tableauCheck == 0:
+        return True
+    else:
+        return False
+
+def testIsGameWon(gameState):
+    return
 
 def isGameOver():
     return
@@ -602,9 +761,12 @@ def play():
     return
 
 
+def validateGameState(gameState):   # allow user generated games to be input.
+    return
+
 def unitTests(gameState):
     deck = deckMaker()
-    printGameState(gameState)
+    # printGameState(gameState)
     # testCanStack(deck)
     # testCalcMaxStacks()
     # testCanDiscard(deck)
@@ -619,15 +781,18 @@ def unitTests(gameState):
     # testIsCardMovable(tableaus)
     # testDoDiscard(gameState)
     # testIsCardTop(tableaus)
+    # testIsTableauRowFree(gameState)
 
     # testDoDiscard(gameState)
     # printGameState(gameState)
     # testMaxStacks(gameState)
+    # testMoveToCell(gameState)
+    # testMoveFromCell(gameState)
     return
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.ERROR)
     deck = [{}]
     deck = list(deckMaker())
     # random.shuffle(deck)
